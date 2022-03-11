@@ -1,11 +1,11 @@
 <?php
 
-namespace OptimistDigital\NovaSortable;
+namespace KraenkVisuell\NovaSortable;
 
-use Laravel\Nova\Nova;
-use Laravel\Nova\Events\ServingNova;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Nova\Events\ServingNova;
+use Laravel\Nova\Nova;
 use OptimistDigital\NovaTranslationsLoader\LoadsNovaTranslations;
 
 class ToolServiceProvider extends ServiceProvider
@@ -19,10 +19,10 @@ class ToolServiceProvider extends ServiceProvider
         });
 
         Nova::serving(function (ServingNova $event) {
-            Nova::script('nova-sortable', __DIR__ . '/../dist/js/tool.js');
+            Nova::script('nova-sortable', __DIR__.'/../dist/js/tool.js');
         });
 
-        $this->loadTranslations(__DIR__ . '/../resources/lang', 'nova-sortable', true);
+        $this->loadTranslations(__DIR__.'/../resources/lang', 'nova-sortable', true);
     }
 
     /**
@@ -32,12 +32,14 @@ class ToolServiceProvider extends ServiceProvider
      */
     protected function routes()
     {
-        if ($this->app->routesAreCached()) return;
+        if ($this->app->routesAreCached()) {
+            return;
+        }
 
         Route::middleware(['nova'])
             ->prefix('nova-vendor/nova-sortable')
             ->domain(config('nova.domain', null))
-            ->namespace('\OptimistDigital\NovaSortable\Http\Controllers')
-            ->group(__DIR__ . '/../routes/api.php');
+            ->namespace('\KraenkVisuell\NovaSortable\Http\Controllers')
+            ->group(__DIR__.'/../routes/api.php');
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace OptimistDigital\NovaSortable\Http\Controllers;
+namespace KraenkVisuell\NovaSortable\Http\Controllers;
 
+use KraenkVisuell\NovaSortable\Traits\HasSortableRows;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Nova;
-use OptimistDigital\NovaSortable\Traits\HasSortableRows;
 
 class SortableController
 {
@@ -26,14 +26,18 @@ class SortableController
         }
 
         // Relationship sorting
-        if (!empty($viaResource)) {
+        if (! empty($viaResource)) {
             $resourceClass = Nova::resourceForKey($viaResource);
-            if (empty($resourceClass)) return response()->json(['resourceName' => 'invalid'], 400);
+            if (empty($resourceClass)) {
+                return response()->json(['resourceName' => 'invalid'], 400);
+            }
 
             $modelClass = $resourceClass::$model;
             $model = $modelClass::find($viaResourceId);
             $relatedModels = $model->{$viaRelationship}()->findMany($resourceIds);
-            if ($relatedModels->count() !== sizeof($resourceIds)) return response()->json(['resourceIds' => 'invalid'], 400);
+            if ($relatedModels->count() !== count($resourceIds)) {
+                return response()->json(['resourceIds' => 'invalid'], 400);
+            }
 
             // BelongsToMany
             if ($relationshipType === 'belongsToMany' || $relationshipType === 'morphToMany') {
@@ -44,7 +48,7 @@ class SortableController
 
             $relatedModel = $relatedModels->first();
 
-            if (!empty($relatedModel)) {
+            if (! empty($relatedModel)) {
                 $orderColumnName = $relatedModel->determineOrderColumnName();
                 $relatedKeyName = ($relationshipType === 'belongsToMany' || $relationshipType === 'morphToMany')
                     ? $model->{$viaRelationship}()->getRelatedPivotKeyName()
@@ -64,7 +68,7 @@ class SortableController
                         $sortOrderNr = $sortedOrder[$i];
 
                         $canSort = $resourceClass::canSort($request, $_model);
-                        if (!$canSort) {
+                        if (! $canSort) {
                             $currentOrderNr = $_model->{$orderColumnName};
 
                             // canSort was false - check if the position changed
@@ -92,7 +96,9 @@ class SortableController
 
         // Regular ordering
         $resourceClass = Nova::resourceForKey($resourceName);
-        if (empty($resourceClass)) return response()->json(['resourceName' => 'invalid'], 400);
+        if (empty($resourceClass)) {
+            return response()->json(['resourceName' => 'invalid'], 400);
+        }
 
         $modelClass = $resourceClass::$model;
         if (method_exists($modelClass, 'trashed')) {
@@ -100,7 +106,9 @@ class SortableController
         } else {
             $models = $modelClass::findMany($resourceIds);
         }
-        if ($models->count() !== sizeof($resourceIds)) return response()->json(['resourceIds' => 'invalid'], 400);
+        if ($models->count() !== count($resourceIds)) {
+            return response()->json(['resourceIds' => 'invalid'], 400);
+        }
 
         $model = $models->first();
         $modelKeyName = $model->getKeyName();
@@ -115,7 +123,7 @@ class SortableController
             foreach ($resourceIds as $i => $id) {
                 $_model = $models->firstWhere($modelKeyName, $id);
                 $canSort = $resourceClass::canSort($request, $_model);
-                if (!$canSort) {
+                if (! $canSort) {
                     // canSort was false - check if the position changed
                     if ($_model->{$orderColumnName} !== $sortedOrder[$i]) {
                         // Order changed - show error
@@ -140,6 +148,7 @@ class SortableController
         $validationResult = $this->validateRequest($request);
         $method = HasSortableRows::getOrderByDirection($validationResult->sortable) !== 'DESC' ? 'moveToStart' : 'moveToEnd';
         $validationResult->model->{$method}();
+
         return response('', 204);
     }
 
@@ -148,6 +157,7 @@ class SortableController
         $validationResult = $this->validateRequest($request);
         $method = HasSortableRows::getOrderByDirection($validationResult->sortable) !== 'DESC' ? 'moveToEnd' : 'moveToStart';
         $validationResult->model->{$method}();
+
         return response('', 204);
     }
 
@@ -172,10 +182,13 @@ class SortableController
         $previousSortOrderNr = null;
         foreach ($sortOrder as $i => $orderNr) {
             $sortOrderNr = $orderNr ?? ((int) $previousSortOrderNr) + 1;
-            if ($sortOrderNr === $previousSortOrderNr) $sortOrderNr += 1;
+            if ($sortOrderNr === $previousSortOrderNr) {
+                $sortOrderNr += 1;
+            }
             $previousSortOrderNr = $sortOrderNr;
             $improvedSortedOrder[$i] = $sortOrderNr;
         }
+
         return $improvedSortedOrder;
     }
 }
