@@ -16,6 +16,19 @@ trait HasSortableRows
         return true;
     }
 
+    public static function hasDropdown()
+    {
+        if (method_exists(static::class, 'sortableHasDropdown')) {
+            return static::sortableHasDropdown();
+        }
+
+        if (isset(static::$sortableHasDropdown)) {
+            return static::$sortableHasDropdown;
+        }
+
+        return false;
+    }
+
     public static function getSortability(NovaRequest $request, $resource = null)
     {
         if (static::sortableCacheEnabled() && ! empty(static::$sortabilityCache[static::class])) {
@@ -104,7 +117,23 @@ trait HasSortableRows
             return parent::serializeForIndex($request, $fields);
         }
 
-        $sortabilityData = ['has_sortable_trait' => true];
+        $sortabilityData = [
+            'has_sortable_trait' => true,
+            'has_dropdown' => $this->hasDropdown(),
+            'position' => 0,
+            'all_positions' => 0,
+        ];
+
+        if ($sortabilityData['has_dropdown']) {
+            $sortabilityData['position'] = $this->{$this->sortable['order_column_name']};
+            
+            $sortabilityData['all_positions'] = $this->buildSortQuery()
+                ->pluck($this->sortable['order_column_name'])
+                ->toArray();
+            
+            sort($sortabilityData['all_positions']);
+        }
+
         $sortabilityData = array_merge($sortabilityData, $sortability->sortable ?? false ? [
             'sortable' => $sortability->sortable,
             'sort_on_index' => $sortability->sortable && ! $sortability->sortOnHasMany,

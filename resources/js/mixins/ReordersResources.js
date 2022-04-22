@@ -42,6 +42,28 @@ export default {
       this.reorderLoading = false;
     },
 
+    async positionChanged(resource, position) {
+        console.log(position)
+
+        this.reorderLoading = true;
+        try {
+            await Nova.request().post(`/nova-vendor/nova-sortable/sort/${this.resourceName}/change-position`, {
+            resourceId: resource.id.value,
+            viaResource: this.viaResource,
+            viaResourceId: this.viaResourceId,
+            viaRelationship: this.viaRelationship,
+            relationshipType: this.relationshipType,
+            relatedResource: this.viaResource,
+            newPosition: position,
+            });
+            await this.refreshResourcesList();
+            Nova.success(this.__('novaSortable.reorderSuccessful'));
+        } catch (e) {
+            Nova.error(this.__('novaSortable.reorderError'));
+        }
+        this.reorderLoading = false;
+    },
+
     async moveToStart(resource) {
       this.reorderLoading = true;
       try {

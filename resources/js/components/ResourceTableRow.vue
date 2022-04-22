@@ -11,6 +11,7 @@
         :resource-name="resourceName"
         @moveToEnd="$emit('moveToEnd')"
         @moveToStart="$emit('moveToStart')"
+        @positionChanged="$emit('positionChanged', $event, position)"
       >
         <template slot="checkbox">
           <checkbox

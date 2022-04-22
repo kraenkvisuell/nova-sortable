@@ -143,6 +143,29 @@ class SortableController
         return response('', 204);
     }
 
+    public function changePosition(NovaRequest $request)
+    {
+        $validationResult = $this->validateRequest($request);
+        $model = $validationResult->model;
+        $orderColumn = $model->determineOrderColumnName();
+         
+        $newPostion = intval($request->newPosition);
+        $oldPostion = intval($model->{$orderColumn});
+        $moveUp = $newPostion < $oldPostion;
+
+        if ($moveUp) {
+            while ($model->{$orderColumn} > $newPostion) {
+                $model->moveOrderUp();
+            }
+        } else {
+            while ($model->{$orderColumn} < $newPostion) {
+                $model->moveOrderDown();
+            }
+        }
+
+        return response('', 204);
+    }
+
     public function moveToStart(NovaRequest $request)
     {
         $validationResult = $this->validateRequest($request);

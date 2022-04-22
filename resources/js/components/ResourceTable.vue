@@ -54,6 +54,7 @@
         :update-selection-status="updateSelectionStatus"
         @moveToStart="moveToStart(resource)"
         @moveToEnd="moveToEnd(resource)"
+        @positionChanged="positionChanged(resource, ...arguments)"
       />
     </draggable>
   </table>
