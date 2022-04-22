@@ -3,7 +3,7 @@
         <slot name="checkbox" />
 
         <div class="flex items-center ml-4" v-tooltip="reorderDisabledTooltip" v-if="canSeeReorderButtons">
-            <div v-if="resource.has_dropdown">
+            <template v-if="resource.has_dropdown">
                 <select 
                     v-model="currentPosition"
                     v-on:change="$emit('positionChanged', currentPosition)"
@@ -17,38 +17,40 @@
                         {{ parseInt(positionIndex) + 1 }}
                     </option>
                 </select>
-            </div>
-        
-            <div 
-                v-else
-                class="flex flex-col"
-            >
-                <chevron-up-icon
-                    @click="!reorderDisabled && $emit('moveToStart')"
-                    :custom-class="{
-                        'cursor-pointer text-70 hover:text-80': !reorderDisabled,
-                        'cursor-default text-50': reorderDisabled,
-                    }"
-                    v-tooltip="moveToStartTooltip"
-                />
+            </template>
 
-                <chevron-down-icon
-                    @click="!reorderDisabled && $emit('moveToEnd')"
-                    :custom-class="{
-                        'cursor-pointer text-70 hover:text-80': !reorderDisabled,
-                        'cursor-default text-50': reorderDisabled,
-                    }"
-                    v-tooltip="moveToEndTooltip"
-                />
-            </div>
+            <template v-else>
+                <div 
+                    class="flex flex-col"
+                >
+                    <chevron-up-icon
+                        @click="!reorderDisabled && $emit('moveToStart')"
+                        :custom-class="{
+                            'cursor-pointer text-70 hover:text-80': !reorderDisabled,
+                            'cursor-default text-50': reorderDisabled,
+                        }"
+                        v-tooltip="moveToStartTooltip"
+                    />
 
-            <burger-icon
-                style="min-width: 22px; width: 32px"
-                :custom-class="{
-                    'handle cursor-move text-70 hover:text-80': !reorderDisabled,
-                    'text-50 cursor-default': reorderDisabled,
-                }"
-            />
+                    <chevron-down-icon
+                        @click="!reorderDisabled && $emit('moveToEnd')"
+                        :custom-class="{
+                            'cursor-pointer text-70 hover:text-80': !reorderDisabled,
+                            'cursor-default text-50': reorderDisabled,
+                        }"
+                        v-tooltip="moveToEndTooltip"
+                    />
+                </div>
+
+                <burger-icon
+                    style="min-width: 22px; width: 32px"
+                    :custom-class="{
+                        'handle cursor-move text-70 hover:text-80': !reorderDisabled,
+                        'text-50 cursor-default': reorderDisabled,
+                    }"
+                />
+            </template>
+            
         </div>
     </div>
 </template>
