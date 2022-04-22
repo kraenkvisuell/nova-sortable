@@ -43,8 +43,6 @@ export default {
     },
 
     async positionChanged(resource, position) {
-        console.log(position)
-
         this.reorderLoading = true;
         try {
             await Nova.request().post(`/nova-vendor/nova-sortable/sort/${this.resourceName}/change-position`, {
