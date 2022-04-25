@@ -4,6 +4,7 @@ namespace KraenkVisuell\NovaSortable\Traits;
 
 use Laravel\Nova\Http\Requests\LensRequest;
 use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Nova;
 use Spatie\EloquentSortable\SortableTrait;
 
 trait HasSortableRows
@@ -77,7 +78,7 @@ trait HasSortableRows
         }
 
         $sortable = self::getSortabilityConfiguration($model);
-
+        
         // Check for `only_sort_on` and `dont_sort_on`
         $hasOnlySortOn = is_array($sortable) && array_key_exists('only_sort_on', $sortable);
         $onlySortOnMatches = $hasOnlySortOn && $request->viaResource() === $sortable['only_sort_on'];
@@ -121,16 +122,38 @@ trait HasSortableRows
             'has_sortable_trait' => true,
             'has_dropdown' => $this->hasDropdown(),
             'position' => 0,
-            'all_positions' => 0,
+            'all_positions' => [],
         ];
 
         if ($sortabilityData['has_dropdown']) {
-            $sortabilityData['position'] = $this->{$this->sortable['order_column_name']};
             
-            $sortabilityData['all_positions'] = $this->buildSortQuery()
+            $viaResource = $request->input('viaResource');
+            $viaResourceId = $request->input('viaResourceId');
+            $viaRelationship = $request->input('viaRelationship');
+            $relationshipType = $request->input('relationshipType');
+
+            if ($relationshipType != 'belongsToMany') {
+                $sortabilityData['position'] = $this->{$this->sortable['order_column_name']};
+                $sortabilityData['all_positions'] = $this->buildSortQuery()
                 ->pluck($this->sortable['order_column_name'])
                 ->toArray();
             
+                
+            } else {
+                $resourceClass = Nova::resourceForKey($viaResource);
+                $modelClass = $resourceClass::$model;
+                $model = $modelClass::find($viaResourceId);
+                
+                $siblings = $model->{$viaRelationship}()
+                    ->get();
+
+                $sortabilityData['position'] = $siblings->firstWhere('id', $this->id)['pivot'][$this->sortable['order_column_name']];
+                
+                $sortabilityData['all_positions'] = $siblings->pluck('pivot.sort_order')
+                    ->toArray();     
+                
+                ray($sortabilityData['position']);
+            }
             sort($sortabilityData['all_positions']);
         }
 
