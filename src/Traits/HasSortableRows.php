@@ -137,8 +137,6 @@ trait HasSortableRows
                 $sortabilityData['all_positions'] = $this->buildSortQuery()
                 ->pluck($this->sortable['order_column_name'])
                 ->toArray();
-            
-                
             } else {
                 $resourceClass = Nova::resourceForKey($viaResource);
                 $modelClass = $resourceClass::$model;
@@ -151,8 +149,6 @@ trait HasSortableRows
                 
                 $sortabilityData['all_positions'] = $siblings->pluck('pivot.sort_order')
                     ->toArray();     
-                
-                ray($sortabilityData['position']);
             }
             sort($sortabilityData['all_positions']);
         }
@@ -172,6 +168,7 @@ trait HasSortableRows
         $sortability = static::getSortability($request);
 
         if (! empty($sortability->model)) {
+            
             // Make sure we are querying the same table, which might not be the case
             // in some complicated relationship views
             if ($request->viaManyToMany()) {
@@ -180,6 +177,8 @@ trait HasSortableRows
             } else {
                 $sortabilityTable = $sortability->model->getTable();
             }
+
+            
 
             if ($query->getQuery()->from === $sortabilityTable) {
                 $shouldSort = true;
