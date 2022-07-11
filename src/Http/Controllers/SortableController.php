@@ -168,20 +168,25 @@ class SortableController
 
     public function moveToStart(NovaRequest $request)
     {
+        
         $validationResult = $this->validateRequest($request);
-        $method = HasSortableRows::getOrderByDirection($validationResult->sortable) !== 'DESC' ? 'moveToStart' : 'moveToEnd';
-        $validationResult->model->{$method}();
-
-        return response('', 204);
+        
+        $position = HasSortableRows::getOrderByDirection($validationResult->sortable) !== 'DESC' 
+            ? 1 
+            : $validationResult->model->getHighestOrderNumber();
+       
+        $this->changePosition($request->merge(['newPosition' => $position]));
     }
 
     public function moveToEnd(NovaRequest $request)
     {
         $validationResult = $this->validateRequest($request);
-        $method = HasSortableRows::getOrderByDirection($validationResult->sortable) !== 'DESC' ? 'moveToEnd' : 'moveToStart';
-        $validationResult->model->{$method}();
+        
+        $position = HasSortableRows::getOrderByDirection($validationResult->sortable) !== 'DESC' 
+            ? $validationResult->model->getHighestOrderNumber()
+            : 1;
 
-        return response('', 204);
+            $this->changePosition($request->merge(['newPosition' => $position]));
     }
 
     protected function validateRequest(NovaRequest $request)
